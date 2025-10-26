@@ -1,6 +1,9 @@
 using System.Web.Mvc;
 using WebApplication1.Models;
 using WebApplication1.Repositories;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using System.Text;
 
 namespace WebApplication1.Controllers
 {
@@ -23,10 +26,20 @@ namespace WebApplication1.Controllers
 
         // POST: Audit/GetLogs (chamada AJAX do DataTables)
         [HttpPost]
-        public JsonResult GetLogs(DataTablesRequest request)
+        public ContentResult GetLogs(DataTablesRequest request)
         {
             var response = _repository.GetAuditLogs(request);
-            return Json(response);
+
+            // Configurar serialização para camelCase (compatível com DataTables)
+            var jsonSettings = new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                Formatting = Formatting.None
+            };
+
+            var json = JsonConvert.SerializeObject(response, jsonSettings);
+
+            return Content(json, "application/json", Encoding.UTF8);
         }
 
         // GET: Audit/Details/5
